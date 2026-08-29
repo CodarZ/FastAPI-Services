@@ -1,0 +1,56 @@
+repos:
+  # 基础文件检查（通用）
+  - repo: git@github.com:pre-commit/pre-commit-hooks.git
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: ['--markdown-linebreak-ext=md']
+        exclude: ^(.*\.lock|.*\.svg)$
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-json
+        exclude: ^.vscode/
+      - id: check-toml
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: detect-private-key
+
+  # Ruff: Python 代码检查与格式化
+  - repo: git@github.com:astral-sh/ruff-pre-commit.git
+    rev: v0.16.4
+    hooks:
+      - id: ruff-check
+        args: ['--config', 'ruff.toml', '--fix', '--unsafe-fixes']
+        types_or: [python, pyi, pyproject]
+      - id: ruff-format
+        args: ['--config', 'ruff.toml']
+        types_or: [python, pyi]
+
+  # Bandit: Python 安全检查
+  - repo: git@github.com:PyCQA/bandit.git
+    rev: 1.9.4
+    hooks:
+      - id: bandit
+        additional_dependencies: ['bandit[toml]']
+        args: ['-c', 'pyproject.toml', '--skip', 'B101']
+        exclude: ^(tests/|test_.*\.py$)
+
+  # UV: 依赖管理
+  - repo: git@github.com:astral-sh/uv-pre-commit.git
+    rev: 0.12.5
+    hooks:
+      - id: uv-lock
+        args: [--frozen, --quiet]
+
+  # Commitizen: 提交信息规范
+  - repo: git@github.com:commitizen-tools/commitizen.git
+    rev: v4.18.0
+    hooks:
+      - id: commitizen
+      - id: commitizen-branch
+        stages:
+          - pre-push

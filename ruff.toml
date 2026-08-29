@@ -1,0 +1,123 @@
+preview = true
+
+line-length = 120
+show-fixes = true
+unsafe-fixes = true
+
+target-version = "py314"
+
+exclude = [".agents/skills/**"]
+
+[lint]
+select = [
+    "ASYNC",                     # flake8-async (异步代码检查)
+    "B",                         # flake8-bugbear (发现潜在的 Bug)
+    "BLE",                       # 禁止写 except Exception: pass
+    "C4",                        # flake8-comprehensions (优化字典/列表推导式)
+    "D",                         # pydocstyle (文档字符串规范检查)
+    "DTZ",                       # 禁止使用 datetime.now()，强制要求必须携带时区（如 datetime.now(UTC)）
+    "E",                         # pycodestyle errors (代码风格错误)
+    "ERA",                       # eradicate（检测无效注释、被注释掉的代码）
+    "F",                         # pyflakes (基础逻辑错误，如未使用的导入)
+    "FAST",                      # FastAPI 专用规则 (检测路由和依赖的最佳实践)
+    "FURB",                      # Refurb 提示使用更新、更优雅的 Python 现代写法
+    "G",                         # flake8-logging-format（logging 格式检查）
+    "I",                         # isort (自动排序 import)
+    "N",                         # pep8-naming（命名规范检查）
+    "PERF",                      # Perflint 性能反模式检测 (配合 3.14 极佳)
+    "PT",                        # flake8-pytest-style 现代后端必写测试，强制 pytest 最佳实践
+    "PTH",                       # flake8-use-pathlib（推荐使用 pathlib）
+    "RET",                       # flake8-return（return 语句优化）
+    "RUF",                       # Ruff 专属高级规则
+    "suspicious-url-open-usage", # bandit (安全检查，禁止使用 eval/exec 等危险函数)
+    "SIM",                       # flake8-simplify (简化冗余代码)
+    "TC",                        # flake8-type-checking (规范 TYPE_CHECKING 导入)
+    "TID",                       # tidy-imports 禁用复杂的相对导入 (防止随着项目变大，import 结构崩溃)
+    "TRY",                       # 规范 try/except 块的写法，防止异常丢失堆栈信息。
+    "UP",                        # pyupgrade (自动将旧语法升级到 Python 3.10+ 新语法)
+    "W",                         # pycodestyle warnings (代码风格警告)
+]
+ignore = [
+    "undocumented-public-module",
+    "undocumented-public-class",
+    "undocumented-public-method",
+    "undocumented-public-function",
+    "undocumented-public-package",
+    "undocumented-magic-method",
+    "undocumented-public-nested-class",
+    "undocumented-public-init",
+    "print",
+    "ambiguous-unicode-character-string",
+    "ambiguous-unicode-character-docstring",
+    "ambiguous-unicode-character-comment",
+    "asyncio-dangling-task",
+    "mutable-class-default",
+    "non-empty-init-module",
+    "raise-vanilla-args",
+    "raise-within-try",
+    "error-instead-of-exception",
+    "assert",
+]
+
+[lint.flake8-type-checking]
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "sqlalchemy.orm.DeclarativeBase",
+    "backend.common.schema.SchemaBase",
+]
+
+[lint.isort]
+order-by-type = true
+case-sensitive = true
+lines-between-types = 1
+combine-as-imports = true
+known-first-party = ["backend"]
+known-third-party = [
+    "fastapi",
+    "starlette",
+    "pydantic",
+    "sqlalchemy",
+    "pydantic_settings",
+    "alembic",
+    "httpx",
+    "pytest",
+    "redis",
+]
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.per-file-ignores]
+"backend/migrations/versions/*.py" = [
+    "D",
+    "line-too-long",
+    "commented-out-code",
+    "mutable-class-default",
+]
+"**/model/*.py" = ["typing-only-standard-library-import"]
+"**/api/*.py" = [
+    "typing-only-first-party-import",
+    "typing-only-third-party-import",
+    "typing-only-standard-library-import",
+]
+"tests/**/*" = [
+    "assert-false",
+    "unused-variable",
+    "module-import-not-at-top-of-file",
+    "assert",
+    "implicit-namespace-package",
+    "relative-imports",
+]
+
+[lint.flake8-pytest-style]
+mark-parentheses = false
+parametrize-names-type = "list"
+parametrize-values-row-type = "list"
+parametrize-values-type = "tuple"
+
+[format]
+preview = true
+quote-style = "single"
+indent-style = "space"
+docstring-code-format = true
+skip-magic-trailing-comma = false

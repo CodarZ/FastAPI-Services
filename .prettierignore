@@ -1,0 +1,19 @@
+# Prettier ignore file
+# https://prettier.io/docs/en/ignore.html
+
+# Lock 文件
+*.lock
+
+# 静态资源
+static/
+
+# 自动生成的文件
+CHANGELOG.md
+requirements.txt
+
+# toml (better-toml 处理)
+*.toml
+
+# python（ruff 处理）
+*.py
+*.pyi

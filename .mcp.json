@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "bunx",
+      "args": ["@upstash/context7-mcp", "--api-key", "${env:CONTEXT7_API_KEY}"]
+    },
+    "exa": {
+      "command": "bunx",
+      "args": ["exa-mcp-server"],
+      "env": {
+        "EXA_API_KEY": "${env:EXA_API_KEY}"
+      }
+    },
+    "postgres": {
+      "command": "bunx",
+      "args": ["@modelcontextprotocol/server-postgres", "postgresql://postgres:123456@localhost:5432/fs_db"]
+    },
+    "redis": {
+      "command": "bunx",
+      "args": ["@modelcontextprotocol/server-redis", "redis://localhost:6379/0"]
+    }
+  }
+}

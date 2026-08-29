@@ -1,0 +1,88 @@
+{
+  // editor
+  "editor.tabSize": 2,
+  "editor.hover.sticky": true,
+  "editor.linkedEditing": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": true,
+  "editor.formatOnSave": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.autoClosingBrackets": "always",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+  "editor.unicodeHighlight.allowedCharacters": {
+    "：": true,
+    "（": true,
+    "）": true,
+    "。": true,
+    "，": true,
+    "、": true,
+    "【": true,
+    "】": true
+  },
+
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.fixAll.ruff": "explicit"
+  },
+
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
+  },
+
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+
+  // files
+  "files.simpleDialog.enable": true,
+  "files.trimTrailingWhitespace": true,
+  "files.trimFinalNewlines": true,
+  "files.insertFinalNewline": true,
+
+  "files.associations": {
+    "*.json": "jsonc",
+    "*rc": "jsonc",
+    ".*ignore": "ignore",
+    ".env*": "dotenv",
+    "*.ini": "ini"
+  },
+
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.ruff_cache": true,
+    "**/*.egg-info": true
+  },
+
+  "search.exclude": {
+    "**/uv.lock": true
+  },
+
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+
+  // Even Better TOML
+  "evenBetterToml.completion.maxKeys": 5,
+  "evenBetterToml.formatter.columnWidth": 120,
+  "evenBetterToml.formatter.allowedBlankLines": 1,
+  "evenBetterToml.formatter.compactArrays": true,
+  "evenBetterToml.formatter.arrayAutoExpand": true,
+  "evenBetterToml.formatter.trailingNewline": true,
+  "evenBetterToml.formatter.arrayAutoCollapse": false,
+  "evenBetterToml.formatter.compactInlineTables": true
+}

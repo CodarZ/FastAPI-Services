@@ -1,0 +1,116 @@
+# ====================================================================
+# Commitizen 配置 - 提交规范 / 版本号 / CHANGELOG
+# ====================================================================
+#
+# 提交类型 17 种:
+#   feat | fix | hotfix | perf | refactor | revert |
+#   style | test | security |
+#   build | ci | deps |
+#   docs | release |
+#   init | wip | chore
+#
+# 触发版本号的类型 9 种:
+#   feat → MINOR
+#   fix | hotfix | security | perf | refactor | deps | revert → PATCH
+#   "type!:" 或 footer "BREAKING CHANGE:" → MAJOR (0.x 阶段升次版本)
+#
+# 进入 CHANGELOG 的类型 9 种:
+#         feat | fix | hotfix | security | perf | refactor | deps | docs | 破坏性变更
+#   排除: style | test | build | ci | release | init | wip | chore | revert
+# ====================================================================
+
+[tool.commitizen]
+name = "cz_customize"
+version_provider = "uv"                                                         # 发版时同步更新 pyproject.toml 与 uv.lock
+tag_format = "v$version"                                                        # tag 形如 v0.1.0
+update_changelog_on_bump = true                                                 # 发版时自动更新 CHANGELOG.md
+major_version_zero = true                                                       # 当前 0.x 阶段: 破坏性变更升次版本而非主版本
+bump_message = "release(version): bump version $current_version → $new_version"
+
+[tool.commitizen.customize]
+message_template = "{{change_type}}{% if scope %}({{scope}}){% endif %}: {{subject}}{% if body %}\n\n{{body}}{% endif %}{% if footer %}\n\n{{footer}}{% endif %}"
+example = "feat(auth): 新增 JWT 登录支持"
+schema = """
+<type>(<scope>): <subject>
+<BLANK LINE>
+<body>
+<BLANK LINE>
+<footer>
+"""
+# 提交信息校验 (commit-msg 钩子)
+schema_pattern = '(?s)^(feat|fix|hotfix|perf|refactor|revert|style|test|security|build|ci|deps|docs|release|init|wip|chore)(\([\w./-]+\))?!?: .+'
+# 版本号计算匹配
+bump_pattern = '^((BREAKING[ -]CHANGE|feat|fix|hotfix|perf|refactor|revert|style|test|security|build|ci|deps|docs|release|init|wip|chore)(\([\w./-]+\))?!?):'
+# 前缀匹配 (group 含 scope, 如 "feat(auth)"); MAJOR 规则必须排在最前
+bump_map = {"^.+!$" = "MAJOR", "^BREAKING[ -]CHANGE" = "MAJOR", "^feat" = "MINOR", "^fix" = "PATCH", "^hotfix" = "PATCH", "^security" = "PATCH", "^perf" = "PATCH", "^refactor" = "PATCH", "^deps" = "PATCH", "^revert" = "PATCH"}
+# 只收录有意义的类型进入 CHANGELOG
+changelog_pattern = '^(feat|fix|hotfix|perf|refactor|security|deps|docs|BREAKING CHANGE)'
+# CHANGELOG 解析文本文字
+commit_parser = '^(?P<change_type>feat|fix|hotfix|perf|refactor|revert|style|test|security|build|ci|deps|docs|release|init|wip|chore)(?:\((?P<scope>[\w./-]+)\))?(?P<breaking>!?)?: (?P<message>.+)'
+# CHANGELOG 排序、标题
+change_type_order = ["BREAKING CHANGE", "feat", "fix", "hotfix", "security", "perf", "refactor", "deps", "docs"]
+change_type_map = {feat = "✨ 新功能", fix = "🐛 问题修复", hotfix = "🚑 紧急修复", security = "🔒 安全修复", perf = "⚡️ 性能优化", refactor = "♻️ 代码重构", deps = "📦 依赖变更", docs = "📝 文档更新", "BREAKING CHANGE" = "💥 破坏性变更"}
+
+[[tool.commitizen.customize.questions]]
+type = "list"
+name = "change_type"
+message = "请选择本次提交的类型:"
+choices = [
+  # 功能变更
+  {value = "feat", name = "✨  feat:       新功能"},
+  {value = "fix", name = "🐛  fix:        问题修复"},
+  {value = "hotfix", name = "🚑  hotfix:     紧急修复        (线上问题快速修复)"},
+  {value = "perf", name = "⚡️  perf:       性能优化        (SQL优化、缓存优化、响应速度)"},
+  {value = "refactor", name = "♻️   refactor:   重构"},
+  {value = "revert", name = "⏪  revert:     回滚"},
+  # 代码质量
+  {value = "style", name = "🎨  style:      格式化          (Ruff 排版调整)"},
+  {value = "test", name = "✅  test:       测试"},
+  {value = "security", name = "🔒  security:   安全修复        (漏洞修复、权限控制)"},
+  # 工程化
+  {value = "build", name = "🏗️   build:      构建            (Docker、部署脚本)"},
+  {value = "ci", name = "👷  ci:         CI/CD           (GitHub Actions、自动化流程)"},
+  {value = "deps", name = "📦  deps:       依赖"},
+  # 文档与发布
+  {value = "docs", name = "📝  docs:       文档"},
+  {value = "release", name = "🚀  release:    发布            (版本号、CHANGELOG)"},
+  # 其他
+  {value = "init", name = "🎉  init:       初始化          (项目结构、基础配置)"},
+  {value = "wip", name = "🚧  wip:        开发中          (半成品、草稿提交)"},
+  {value = "chore", name = "🛠   chore:      其他            (依赖更新、配置调整)"},
+]
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "scope"
+message = """
+本次提交的影响范围 (可选, 使用英文):
+  - 常用范围:              app, core, common, database, middleware, utils, main
+  - 子模块使用 / 分隔:     common/exception, core/config
+  - 多个范围逗号分隔:      core,common
+
+"""
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "subject"
+message = "简短描述本次变更 (必填):\n"
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "body"
+multiline = true
+message = "提供更详细的提交描述 (可选): 变更的具体内容和原因, 技术实现细节, 影响范围说明, 相关的业务背景\n"
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "footer"
+multiline = true
+message = """
+页脚信息 (可选):
+  - 关联 Issue:       Closes #123, Fixes #456, Resolves #789
+  - 破坏性变更:       BREAKING CHANGE: 描述
+  - 协作标注:         Co-authored-by: Name <email>
+  - 签名:             Signed-off-by: Name <email>
+
+"""
