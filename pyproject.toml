@@ -3,6 +3,7 @@ name = "fastapi-services"
 version = "0.0.0"
 description = "FastAPI Services"
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.14"
 dependencies = [
     "alembic>=1.19.1",
