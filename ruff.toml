@@ -9,6 +9,7 @@ target-version = "py314"
 exclude = [".agents/skills/**"]
 
 [lint]
+logger-objects = ["loguru.logger"] # 让 G / BLE 规则识别 loguru (logger.exception 视为已处理异常)
 select = [
     "ASYNC",                     # flake8-async (异步代码检查)
     "B",                         # flake8-bugbear (发现潜在的 Bug)
@@ -56,6 +57,7 @@ ignore = [
     "raise-vanilla-args",
     "raise-within-try",
     "error-instead-of-exception",
+    "error-suffix-on-exception-name",
     "assert",
 ]
 

@@ -102,6 +102,9 @@ class Settings(BaseSettings):
     # ============== 请求上下文与链路追踪 ==============
     TRACE_ID_HEADER: str = 'X-Request-ID'
     TRACE_ID_LOG_DEFAULT: str = '-'
+    # 客户端真实 IP 候选请求头 (按顺序尝试), 仅当部署于 CDN 之后时配置, 如 ['CF-Connecting-IP', 'X-Forwarded-For'];
+    # 默认为空 = 仅信任 uvicorn (--proxy-headers / --forwarded-allow-ips) 写入 scope['client'] 的地址
+    CLIENT_IP_HEADERS: list[str] = Field(default_factory=list)
 
     # ============== 请求访问日志、敏感数据脱敏 ==============
     REQUEST_LOG_ENABLE: bool = True

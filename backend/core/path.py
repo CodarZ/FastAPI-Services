@@ -17,9 +17,12 @@ ALEMBIC_VERSION_DIR = BACKEND_DIR / 'migrations' / 'versions'
 
 # 静态资源目录
 STATIC_DIR = ROOT_DIR / 'static'
-# IP 属地离线数据文件路径
-IP2REGION_XDB_PATH = STATIC_DIR / 'ip2region.xdb'
+
+# IP 属地离线数据目录
+IP2REGION_DIR = STATIC_DIR / 'ip2region'
+IP2REGION_XDB_V4_PATH = IP2REGION_DIR / 'ip2region_v4.xdb'
+IP2REGION_XDB_V6_PATH = IP2REGION_DIR / 'ip2region_v6.xdb'
 
 # 确保目录存在
-for directory in (LOG_DIR, STATIC_DIR):
+for directory in (LOG_DIR, STATIC_DIR, IP2REGION_DIR):
     directory.mkdir(parents=True, exist_ok=True)

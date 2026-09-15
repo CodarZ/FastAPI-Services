@@ -23,7 +23,6 @@ dependencies = [
     "pyrate-limiter>=4.4.0",
     "redis[hiredis]>=8.1.0",
     "sqlalchemy[asyncio]>=2.0.52",
-    "starlette-context>=0.5.1",
     "user-agents>=2.2.0",
 ]
 
