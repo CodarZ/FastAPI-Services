@@ -3,7 +3,6 @@ from backend.common.request.context import (
     bind_context,
     ctx,
     get_request_context,
-    patch_log_record,
 )
 from backend.common.request.parse import (
     lookup_ip_region,
@@ -25,5 +24,4 @@ __all__ = [
     'parse_client_ip',
     'parse_trace_id',
     'parse_user_agent',
-    'patch_log_record',
 ]

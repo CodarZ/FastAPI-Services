@@ -134,17 +134,35 @@ class Settings(BaseSettings):
 
     # ============== 日志系统配置（Loguru） ==============
     LOG_CONSOLE_LEVEL: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] = 'INFO'  # 控制台日志级别
+    LOG_JSON_LEVEL: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] = 'INFO'  # 生产 JSON 日志级别 (云原生 stdout 采集)
     LOG_FILE_LEVEL: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] = 'INFO'  # 文件记录日志级别
+    LOG_OUTPUT_MODE: Literal['text', 'json', 'both'] = 'text'  # 输出模式: 彩色文本 / 生产单行JSON / 两者兼具
+    LOG_FILE_ENABLED: bool = True  # 是否开启磁盘日志文件记录 (云原生模式可置为 False)
     LOG_ACCESS_FILENAME: str = 'access.log'
     LOG_ERROR_FILENAME: str = 'error.log'
     LOG_RETENTION: str = '30 days'  # 文件保留周期（过期自动清理）
     LOG_ROTATION: str = '00:00'  # 日志切分滚动周期（每日零点自动切分）
-    LOG_STD_FORMAT: str = (
+
+    # 控制台彩色输出格式
+    LOG_FORMAT_CONSOLE: str = (
         '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</> | '
         '<lvl>{level: <8}</> | '
-        '<cyan>{extra[request_id]}</> | '
+        '<cyan>{extra[request_id]: <32}</> | '
+        '<blue>{extra[tenant_display]: <16}</> | '
+        '<cyan>{extra[caller_display]: <32}</> | '
         '<lvl>{message}</>'
-    )  # 日志格式模板
+    )
+
+    # 磁盘文件纯文本输出格式
+    LOG_FORMAT_FILE: str = (
+        '{time:YYYY-MM-DD HH:mm:ss.SSS} | '
+        '{level: <8} | '
+        '{extra[thread_display]: <16} | '
+        '{extra[request_id]: <32} | '
+        '{extra[tenant_display]: <16} | '
+        '{extra[caller_display]: <32} | '
+        '{message}'
+    )
 
     # ============== 验证码配置 ==============
     CAPTCHA_EXPIRE_SECONDS: int = 60 * 5  # 验证码有效时间（5 分钟）
