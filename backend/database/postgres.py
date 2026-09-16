@@ -1,4 +1,3 @@
-from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import (
@@ -8,6 +7,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from backend.common.log import log
 from backend.core.config import settings
 
 __all__ = [
@@ -61,14 +61,14 @@ def init_db_engine(url: str | None = None, **kwargs: object) -> None:
     global async_engine, async_session_factory
     async_engine = create_database_engine(url=url, **kwargs)
     async_session_factory = create_session_factory(async_engine)
-    logger.info('全局数据库引擎已成功初始化: {}', async_engine.url.render_as_string(hide_password=True))
+    log.info('全局数据库引擎已成功初始化: {}', async_engine.url.render_as_string(hide_password=True))
 
 
 async def close_db_engine(engine: AsyncEngine | None = None) -> None:
     """关闭数据库引擎并释放所有底层连接."""
     target_engine = engine or async_engine
     await target_engine.dispose()
-    logger.info('数据库连接池已安全释放')
+    log.info('数据库连接池已安全释放')
 
 
 async def check_db_health(engine: AsyncEngine | None = None) -> bool:
@@ -78,7 +78,7 @@ async def check_db_health(engine: AsyncEngine | None = None) -> bool:
         async with target_engine.connect() as conn:
             await conn.execute(text('SELECT 1'))
     except (SQLAlchemyError, OSError) as exc:
-        logger.warning('数据库健康探活失败: {}', exc)
+        log.warning('数据库健康探活失败: {}', exc)
         return False
     else:
         return True

@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from loguru import logger
 from sqlalchemy import text
 
+from backend.common.log import log
 from backend.core.config import settings
 from backend.database.postgres import async_engine
 from backend.database.tenant.naming import build_tenant_schema_name
@@ -43,7 +43,7 @@ async def create_tenant_schema(tenant_id: str, *, engine: AsyncEngine | None = N
     async with target_engine.begin() as conn:
         await conn.execute(create_sql)
 
-    logger.info('已成功为租户创建物理 Schema 沙箱: {} (tenant_id={})', schema_name, tenant_id)
+    log.info('已成功为租户创建物理 Schema 沙箱: {} (tenant_id={})', schema_name, tenant_id)
     return schema_name
 
 
@@ -86,4 +86,4 @@ async def drop_tenant_schema(tenant_id: str, *, cascade: bool = False, engine: A
     async with target_engine.begin() as conn:
         await conn.execute(drop_sql)
 
-    logger.warning('已物理销毁租户 Schema 沙箱: {} (cascade={})', schema_name, cascade)
+    log.warning('已物理销毁租户 Schema 沙箱: {} (cascade={})', schema_name, cascade)

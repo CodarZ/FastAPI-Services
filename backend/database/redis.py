@@ -1,7 +1,7 @@
-from loguru import logger
 from redis.asyncio import ConnectionPool, Redis
 from redis.exceptions import RedisError
 
+from backend.common.log import log
 from backend.core.config import settings
 
 __all__ = [
@@ -50,7 +50,7 @@ def init_redis_pool(url: str | None = None, **kwargs: object) -> None:
     global redis_client, redis_pool
     redis_pool = create_redis_pool(url=url, **kwargs)
     redis_client = create_redis_client(redis_pool)
-    logger.info('全局 Redis 连接池已成功初始化')
+    log.info('全局 Redis 连接池已成功初始化')
 
 
 async def close_redis_pool(client: Redis | None = None) -> None:
@@ -59,7 +59,7 @@ async def close_redis_pool(client: Redis | None = None) -> None:
     await target_client.close()
     if target_client.connection_pool is not None:
         await target_client.connection_pool.disconnect()
-    logger.info('Redis 连接池已安全释放')
+    log.info('Redis 连接池已安全释放')
 
 
 async def check_redis_health(client: Redis | None = None) -> bool:
@@ -68,7 +68,7 @@ async def check_redis_health(client: Redis | None = None) -> bool:
     try:
         pong = await target_client.ping()
     except (RedisError, OSError) as exc:
-        logger.warning('Redis 健康探活失败: {}', exc)
+        log.warning('Redis 健康探活失败: {}', exc)
         return False
     else:
         return bool(pong)

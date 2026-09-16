@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING
 import ip2region.searcher as xdb
 import ip2region.util as xdb_util
 
-from loguru import logger
 from starlette.datastructures import Headers
 from user_agents import parse as _parse_ua
 
+from backend.common.log import log
 from backend.common.model.dataclasses import UserAgentInfo
 from backend.core.config import settings
 from backend.core.path import IP2REGION_XDB_V4_PATH, IP2REGION_XDB_V6_PATH
@@ -107,14 +107,14 @@ def _load_searcher(version: int) -> xdb.Searcher | None:
         path, xdb_version = IP2REGION_XDB_V6_PATH, xdb_util.IPv6
 
     if not path.is_file():
-        logger.debug('ip2region xdb 文件不存在，IPv{} 属地解析不可用: {}', version, path)
+        log.debug('ip2region xdb 文件不存在，IPv{} 属地解析不可用: {}', version, path)
         return None
 
     try:
         content = xdb_util.load_content_from_file(str(path))
         return xdb.new_with_buffer(xdb_version, content)
     except Exception:
-        logger.exception('ip2region xdb 内存加载失败，IPv{} 属地解析不可用: {}', version, path)
+        log.exception('ip2region xdb 内存加载失败，IPv{} 属地解析不可用: {}', version, path)
         return None
 
 
@@ -148,7 +148,7 @@ def lookup_ip_region(ip: str) -> str | None:
     try:
         region = searcher.search(str(addr))
     except Exception:
-        logger.exception('ip2region 查询执行异常: {}', ip)
+        log.exception('ip2region 查询执行异常: {}', ip)
         return None
     else:
         return region or None

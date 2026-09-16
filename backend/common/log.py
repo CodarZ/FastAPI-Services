@@ -13,12 +13,13 @@ import msgspec
 from loguru import logger
 from pydantic import BaseModel
 
-from backend.common.request.context import ctx
 from backend.core.config import settings
 from backend.core.path import LOG_DIR
 
 if TYPE_CHECKING:
     from loguru import Record
+
+    from backend.common.request.context import _ContextProxy
 
 __all__ = [
     'InterceptHandler',
@@ -30,6 +31,20 @@ __all__ = [
 ]
 
 log = logger
+
+# 延迟绑定的请求上下文代理单例，避免与 request 模块产生循环导入
+_cached_ctx: _ContextProxy | None = None
+
+
+def _get_request_ctx() -> _ContextProxy:
+    """延迟获取请求上下文单例，解除模块循环依赖."""
+    global _cached_ctx
+    if _cached_ctx is None:
+        from backend.common.request.context import ctx
+
+        _cached_ctx = ctx
+    return _cached_ctx
+
 
 # 系统内部专用的 extra 字段名集合
 _SYSTEM_EXTRA_KEYS: frozenset[str] = frozenset({
@@ -187,13 +202,14 @@ def mask_sensitive_data[T](
 
 def _patch_record_context(record: Record) -> None:
     """内部私有 Patcher: 自动注入全链路 TraceID、租户、用户，并对 extra 数据精准脱敏."""
+    current_ctx = _cached_ctx if _cached_ctx is not None else _get_request_ctx()
     extra = record['extra']
-    extra.setdefault('request_id', ctx.trace_id)
+    extra.setdefault('request_id', current_ctx.trace_id)
 
-    tenant = ctx.tenant_id or '-'
+    tenant = current_ctx.tenant_id or '-'
     extra.setdefault('tenant_id', tenant)
     extra.setdefault('tenant_display', f'[{tenant}]')
-    extra.setdefault('user_uid', ctx.user_uid or '-')
+    extra.setdefault('user_uid', current_ctx.user_uid or '-')
 
     # 代码位置 (模块名:函数名:代码行号)
     caller = f'{record["name"]}:{record["function"]}:{record["line"]}'
@@ -345,6 +361,9 @@ def _both_stdout_sink(message: Any) -> None:
 def setup_logging() -> None:
     """初始化全局结构化日志中枢 (Lifespan 启动阶段调用)."""
     global _cached_console_level_no, _cached_json_level_no
+
+    # 绑定请求上下文代理单例
+    _get_request_ctx()
 
     logger.remove()
 
