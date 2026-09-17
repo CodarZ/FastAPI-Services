@@ -203,13 +203,27 @@ def mask_sensitive_data[T](
 def _patch_record_context(record: Record) -> None:
     """内部私有 Patcher: 自动注入全链路 TraceID、租户、用户，并对 extra 数据精准脱敏."""
     current_ctx = _cached_ctx if _cached_ctx is not None else _get_request_ctx()
-    extra = record['extra']
-    extra.setdefault('request_id', current_ctx.trace_id)
 
-    tenant = current_ctx.tenant_id or '-'
-    extra.setdefault('tenant_id', tenant)
-    extra.setdefault('tenant_display', f'[{tenant}]')
-    extra.setdefault('user_uid', current_ctx.user_uid or '-')
+    # 提取底层 RequestContext
+    raw_ctx = current_ctx.raw
+    extra = record['extra']
+
+    if raw_ctx is not None:
+        extra.setdefault('request_id', raw_ctx.trace_id)
+        if settings.TENANT_ENABLED:
+            tenant = raw_ctx.tenant.tenant_id if raw_ctx.tenant else '-'
+            extra.setdefault('tenant_id', tenant)
+            extra.setdefault('tenant_display', f'[{tenant}]')
+        else:
+            extra.setdefault('tenant_id', '-')
+            extra.setdefault('tenant_display', '')
+        extra.setdefault('user_uid', raw_ctx.user.uid if raw_ctx.user else '-')
+    else:
+        # 脱离请求上下文的占位
+        extra.setdefault('request_id', settings.TRACE_ID_LOG_DEFAULT)
+        extra.setdefault('tenant_id', '-')
+        extra.setdefault('tenant_display', '[-]' if settings.TENANT_ENABLED else '')
+        extra.setdefault('user_uid', '-')
 
     # 代码位置 (模块名:函数名:代码行号)
     caller = f'{record["name"]}:{record["function"]}:{record["line"]}'
@@ -310,18 +324,23 @@ def _msgspec_json_sink(message: Any) -> None:
     record = message.record
     extra = record['extra']
 
+    caller = extra.get('caller_display') or f'{record["name"]}:{record["function"]}:{record["line"]}'
+
     # 构造符合 OpenTelemetry 规范的扁平化 JSON 字典结构，便于 ES / Loki 直接索引检索
     log_entry: dict[str, Any] = {
-        'caller': f'{record["name"]}:{record["function"]}:{record["line"]}',
+        'caller': caller,
         'level': record['level'].name,
         'message': record['message'],
         'process': record['process'].id,
-        'tenant_id': extra.get('tenant_id', '-'),
         'thread': record['thread'].name,
         'timestamp': record['time'].astimezone(UTC).isoformat(),
         'trace_id': extra.get('request_id', '-'),
         'user_uid': extra.get('user_uid', '-'),
     }
+
+    # 多租户输出 tenant_id
+    if settings.TENANT_ENABLED:
+        log_entry['tenant_id'] = extra.get('tenant_id', '-')
 
     # 提取并保留业务自定义 extra 绑定字段
     custom_extra = {k: v for k, v in extra.items() if k not in _SYSTEM_EXTRA_KEYS}
@@ -377,12 +396,19 @@ def setup_logging() -> None:
     # 挂载全局
     logger.configure(patcher=_patch_record_context)
 
+    # 动态适配租户模式
+    format_console = settings.LOG_FORMAT_CONSOLE
+    format_file = settings.LOG_FORMAT_FILE
+    if not settings.TENANT_ENABLED:
+        format_console = format_console.replace('<blue>{extra[tenant_display]: <16}</> | ', '')
+        format_file = format_file.replace('{extra[tenant_display]: <16} | ', '')
+
     # 纯文本模式
     if settings.LOG_OUTPUT_MODE == 'text':
         logger.add(
             sys.stdout,
             level=settings.LOG_CONSOLE_LEVEL,
-            format=settings.LOG_FORMAT_CONSOLE,
+            format=format_console,
             colorize=is_tty,
             enqueue=True,  # 推入内部安全队列，异步非阻塞输出
             backtrace=True,  # 异常时记录跨越多层调用栈的完整回溯
@@ -405,7 +431,7 @@ def setup_logging() -> None:
         logger.add(
             _both_stdout_sink,
             level=min_level_no,
-            format=settings.LOG_FORMAT_CONSOLE,
+            format=format_console,
             colorize=is_tty,
             enqueue=True,
             backtrace=True,
@@ -421,7 +447,7 @@ def setup_logging() -> None:
         logger.add(
             str(access_log_path),
             level=settings.LOG_FILE_LEVEL,
-            format=settings.LOG_FORMAT_FILE,
+            format=format_file,
             rotation=settings.LOG_ROTATION,  # 每日零点自动切分新文件
             retention=settings.LOG_RETENTION,  # 历史日志自动保留周期 (如 30 days)
             compression='zip',  # 切分后的历史日志自动压缩以节约存储
@@ -436,7 +462,7 @@ def setup_logging() -> None:
         logger.add(
             str(error_log_path),
             level='ERROR',
-            format=settings.LOG_FORMAT_FILE,
+            format=format_file,
             rotation=settings.LOG_ROTATION,
             retention=settings.LOG_RETENTION,
             compression='zip',
