@@ -1,7 +1,10 @@
-from pydantic import BaseModel, Field
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
 
 __all__ = [
     'PageResult',
+    'ResponseBase',
     'ResponseModel',
     'response_base',
 ]
@@ -10,10 +13,13 @@ __all__ = [
 class ResponseModel[T](BaseModel):
     """全局统一 API 响应模型."""
 
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     code: int = Field(default=200, description='业务状态码')
     message: str = Field(default='请求成功', description='提示信息')
     data: T | None = Field(default=None, description='响应业务载荷')
-    trace_id: str | None = Field(default=None, description='全链路追踪 ID (仅开发/测试环境返回)')
+    trace_id: str | None = Field(default=None, description='全链路追踪 ID')
+    errors: list[dict[str, Any]] | None = Field(default=None, description='验证错误')
 
 
 class PageResult[T](BaseModel):
@@ -37,7 +43,17 @@ class ResponseBase:
         code: int = 200,
         trace_id: str | None = None,
     ) -> ResponseModel[T]:
-        return ResponseModel[T](code=code, message=message, data=data, trace_id=trace_id)
+        return ResponseModel[T](code=code, message=message, data=data, trace_id=trace_id, errors=None)
+
+    @staticmethod
+    def fail(
+        *,
+        message: str = '请求处理失败',
+        code: int = 400,
+        errors: list[dict[str, Any]] | None = None,
+        trace_id: str | None = None,
+    ) -> ResponseModel[None]:
+        return ResponseModel[None](code=code, message=message, data=None, trace_id=trace_id, errors=errors)
 
 
 response_base = ResponseBase()
