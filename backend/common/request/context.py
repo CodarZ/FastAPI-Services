@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from time import monotonic_ns
 from typing import TYPE_CHECKING, Any
 
+from backend.common.request.parse import UNKNOWN_IP
 from backend.common.request.trace_id import gen_trace_id
 from backend.core.config import settings
 
@@ -21,9 +22,6 @@ __all__ = [
     'ctx',
     'get_request_context',
 ]
-
-# 未解析到客户端 IP 时的占位符，杜绝 None 穿透至字符串处理函数
-_UNKNOWN_IP: str = '0.0.0.0'  # nosec B104
 
 
 @dataclass(slots=True)
@@ -79,7 +77,7 @@ class _ContextProxy:
     def ip(self) -> str:
         """获取客户端真实 IP."""
         client = self.client
-        return client.ip if client and client.ip else _UNKNOWN_IP
+        return client.ip if client and client.ip else UNKNOWN_IP
 
     @property
     def user_agent(self) -> str | None:

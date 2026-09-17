@@ -19,13 +19,14 @@ if TYPE_CHECKING:
     from starlette.types import Scope
 
 __all__ = [
+    'UNKNOWN_IP',
     'lookup_ip_region',
     'parse_client_ip',
     'parse_user_agent',
 ]
 
 # 无法确定客户端地址
-_UNKNOWN_IP: str = '0.0.0.0'  # nosec B104
+UNKNOWN_IP: str = '0.0.0.0'  # nosec B104
 
 
 def _valid_ip(candidate: str) -> str | None:
@@ -37,7 +38,7 @@ def _valid_ip(candidate: str) -> str | None:
     return str(address)
 
 
-def parse_client_ip(scope: Scope) -> str:
+def parse_client_ip(scope: Scope, headers: Headers | None = None) -> str:
     """提取客户端真实 IP.
 
     提取顺序:
@@ -46,9 +47,10 @@ def parse_client_ip(scope: Scope) -> str:
     3. '0.0.0.0' 兜底。
     """
     if settings.CLIENT_IP_HEADERS:
-        headers = Headers(scope=scope)
+        # 复用上层传入的 Headers 实例，缺省时才从 scope 解码
+        req_headers = headers if headers is not None else Headers(scope=scope)
         for name in settings.CLIENT_IP_HEADERS:
-            raw = headers.get(name)
+            raw = req_headers.get(name)
             if not raw:
                 continue
             # 取最左侧首段并校验合法性
@@ -62,7 +64,7 @@ def parse_client_ip(scope: Scope) -> str:
         if ip:
             return ip
 
-    return _UNKNOWN_IP
+    return UNKNOWN_IP
 
 
 @lru_cache(maxsize=2048)
@@ -127,6 +129,7 @@ def _get_searcher(version: int) -> xdb.Searcher | None:
     return _searchers[version]
 
 
+@lru_cache(maxsize=4096)
 def lookup_ip_region(ip: str) -> str | None:
     """离线高速查询 IP 物理属地."""
     if not settings.IP2REGION_ENABLED or not ip:
