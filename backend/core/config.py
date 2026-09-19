@@ -94,7 +94,9 @@ class Settings(BaseSettings):
     # ============== 中间件与跨域访问 ==============
     MIDDLEWARE_CORS: bool = True  # 是否启用
     CORS_ALLOWED_ORIGINS: list[str] = Field(default_factory=lambda: ['*'])  # 允许跨域请求地址列表
-    CORS_EXPOSE_HEADERS: list[str] = Field(default_factory=lambda: ['*'])  # 允许客户端访问的响应头
+    CORS_EXPOSE_HEADERS: list[str] = Field(
+        default_factory=lambda: ['*', 'X-Request-ID']
+    )  # 允许客户端访问的响应头 (credentials 部署下 '*' 为字面量, 须显式列出 trace 头)
     CORS_ALLOW_CREDENTIALS: bool = True  # 是否支持跨域携带 Cookie / 认证凭据
     CORS_ALLOW_METHODS: list[str] = Field(default_factory=lambda: ['*'])  # 允许跨域的 HTTP 请求方法列表
     CORS_ALLOW_HEADERS: list[str] = Field(default_factory=lambda: ['*'])  # 允许跨域请求携带的请求头列表

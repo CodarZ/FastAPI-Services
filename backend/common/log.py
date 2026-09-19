@@ -310,9 +310,9 @@ def _extract_exception_info(exc: Any) -> dict[str, Any]:
         'type': full_type,
     }
 
-    # 提取业务异常自带的状态码与错误码属性 (如 BaseAppException.code / status_code)
-    if hasattr(exc_val, 'code'):
-        info['error_code'] = exc_val.code
+    # 提取业务异常自带的错误码与状态码 (error_code: 显式细码 → 类级 → 推导规范码保底)
+    if hasattr(exc_val, 'error_code'):
+        info['error_code'] = exc_val.error_code
     if hasattr(exc_val, 'status_code'):
         info['status_code'] = exc_val.status_code
 
