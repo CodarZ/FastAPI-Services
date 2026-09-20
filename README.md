@@ -38,6 +38,7 @@
 - ✅ **Ruff** - 代码检查 + 格式化
 - 🚫 **Commitizen** - 规范化 Git 提交
 - 🪝 **prek** - Rust 编写的极速 Git Hook 管理器，替代 pre-commit
+- 🤖 **AI Agent Skills** - AI 技能规范
 
 ## 🚀 快速开始
 
@@ -111,6 +112,24 @@ uv sync
 
   ```bash
   git push --follow-tags
+  ```
+
+## 🤖 AI Agent Skills
+
+本项目通过 [skills.sh](https://skills.sh/) 集成技能体系，并由 `skills-lock.json` 进行依赖版本锁定。
+
+### 常用命令
+
+- **还原项目技能**：
+
+  ```bash
+  npx skills experimental_install
+  ```
+
+- **更新项目技能至最新版本**：
+
+  ```bash
+  npx skills update -p
   ```
 
 <p align="center">
