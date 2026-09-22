@@ -1,8 +1,3 @@
-from fastapi import FastAPI
+from backend.core.registrar import register_app
 
-app = FastAPI()
-
-
-@app.get('/')
-def read_root():
-    return {'Hello': 'FastAPI Services'}
+app = register_app()
