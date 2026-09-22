@@ -56,7 +56,7 @@ def init_redis_pool(url: str | None = None, **kwargs: object) -> None:
 async def close_redis_pool(client: Redis | None = None) -> None:
     """平滑关闭 Redis 客户端并释放连接池连接."""
     target_client = client or redis_client
-    await target_client.close()
+    await target_client.aclose()
     if target_client.connection_pool is not None:
         await target_client.connection_pool.disconnect()
     log.info('Redis 连接池已安全释放')
