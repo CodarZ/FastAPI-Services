@@ -5,6 +5,8 @@ from backend.database.postgres import (
     close_db_engine,
     create_database_engine,
     create_session_factory,
+    get_engine,
+    get_session_factory,
     init_db_engine,
 )
 from backend.database.redis import (
@@ -51,7 +53,9 @@ __all__ = [
     'drop_tenant_schema',
     'extract_tenant_id_from_schema',
     # 会话生成器与依赖注入
+    'get_engine',
     'get_public_db',
+    'get_session_factory',
     'get_tenant_db',
     'get_tenant_db_by_id',
     'init_db_engine',

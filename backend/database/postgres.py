@@ -17,6 +17,8 @@ __all__ = [
     'close_db_engine',
     'create_database_engine',
     'create_session_factory',
+    'get_engine',
+    'get_session_factory',
     'init_db_engine',
 ]
 
@@ -56,11 +58,21 @@ async_engine: AsyncEngine = create_database_engine()
 async_session_factory: async_sessionmaker[AsyncSession] = create_session_factory(async_engine)
 
 
+def get_engine() -> AsyncEngine:
+    """获取当前全局数据库引擎实例."""
+    return async_engine
+
+
+def get_session_factory() -> async_sessionmaker[AsyncSession]:
+    """获取当前全局异步会话工厂实例."""
+    return async_session_factory
+
+
 def init_db_engine(url: str | None = None, **kwargs: object) -> None:
-    """重新初始化引擎与会话工厂 (常用于测试)."""
-    global async_engine, async_session_factory
+    """重新初始化引擎与会话工厂 (常用于测试与探针切换)."""
+    global async_engine
     async_engine = create_database_engine(url=url, **kwargs)
-    async_session_factory = create_session_factory(async_engine)
+    async_session_factory.configure(bind=async_engine)
     log.info('全局数据库引擎已成功初始化: {}', async_engine.url.render_as_string(hide_password=True))
 
 

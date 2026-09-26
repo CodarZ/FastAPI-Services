@@ -4,7 +4,7 @@ from sqlalchemy import text
 
 from backend.common.log import log
 from backend.core.config import settings
-from backend.database.postgres import async_engine
+from backend.database import postgres as pg
 from backend.database.tenant.naming import build_tenant_schema_name
 
 if TYPE_CHECKING:
@@ -35,7 +35,7 @@ async def create_tenant_schema(tenant_id: str, *, engine: AsyncEngine | None = N
         raise RuntimeError('系统当前运行于单租户模式 (TENANT_ENABLED=False)，不支持开辟独立租户沙箱')
 
     schema_name = build_tenant_schema_name(tenant_id)
-    target_engine = engine or async_engine
+    target_engine = engine or pg.async_engine
 
     # 使用双引号强约束安全标识符，防范 SQL 注入
     create_sql = text(f'CREATE SCHEMA IF NOT EXISTS "{schema_name}"')
@@ -58,7 +58,7 @@ async def check_tenant_schema_exists(tenant_id: str, *, engine: AsyncEngine | No
         bool: 存在返回 True，不存在返回 False。
     """
     schema_name = build_tenant_schema_name(tenant_id)
-    target_engine = engine or async_engine
+    target_engine = engine or pg.async_engine
 
     query = text('SELECT 1 FROM information_schema.schemata WHERE schema_name = :schema_name')
     async with target_engine.connect() as conn:
@@ -78,7 +78,7 @@ async def drop_tenant_schema(tenant_id: str, *, cascade: bool = False, engine: A
         raise RuntimeError('系统当前运行于单租户模式，无法执行租户沙箱销毁操作')
 
     schema_name = build_tenant_schema_name(tenant_id)
-    target_engine = engine or async_engine
+    target_engine = engine or pg.async_engine
 
     cascade_clause = 'CASCADE' if cascade else 'RESTRICT'
     drop_sql = text(f'DROP SCHEMA IF EXISTS "{schema_name}" {cascade_clause}')

@@ -1,15 +1,15 @@
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from backend.common.request import ctx
 from backend.core.config import settings
-from backend.database.postgres import async_engine, async_session_factory
+from backend.database import postgres as pg
 from backend.database.tenant.naming import build_tenant_schema_name
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
+
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 __all__ = [
     'get_public_db',
@@ -48,7 +48,7 @@ def resolve_tenant_schema(tenant_id: str | None = None) -> str:
 
 async def get_public_db() -> AsyncGenerator[AsyncSession]:
     """FastAPI 依赖注入器: 获取公共/平台级数据库会话."""
-    session = async_session_factory()
+    session = pg.async_session_factory()
     try:
         yield session
         await session.commit()
@@ -63,16 +63,13 @@ async def get_tenant_db() -> AsyncGenerator[AsyncSession]:
     """FastAPI 依赖注入器: 隐式从当前请求上下文获取租户专属数据库会话.
 
     单租户模式下自动透明降级回退至 public。
+    通过全局会话工厂委托生成，完整继承 autoflush、expire_on_commit 等配置与扩展。
     """
     schema_name = resolve_tenant_schema()
-    tenant_engine = async_engine.execution_options(
+    tenant_engine = pg.async_engine.execution_options(
         schema_translate_map={'tenant': schema_name},
     )
-    session = AsyncSession(
-        bind=tenant_engine,
-        autoflush=False,
-        expire_on_commit=False,
-    )
+    session = pg.async_session_factory(bind=tenant_engine)
     try:
         yield session
         await session.commit()
@@ -96,14 +93,10 @@ async def get_tenant_db_by_id(tenant_id: str) -> AsyncGenerator[AsyncSession]:
         AsyncSession: 绑定目标租户 Schema 翻译的异步会话。
     """
     schema_name = resolve_tenant_schema(tenant_id)
-    tenant_engine = async_engine.execution_options(
+    tenant_engine = pg.async_engine.execution_options(
         schema_translate_map={'tenant': schema_name},
     )
-    session = AsyncSession(
-        bind=tenant_engine,
-        autoflush=False,
-        expire_on_commit=False,
-    )
+    session = pg.async_session_factory(bind=tenant_engine)
     try:
         yield session
         await session.commit()
