@@ -2,19 +2,17 @@ from contextvars import ContextVar, Token
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from time import monotonic_ns
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
+from backend.common.model.dataclasses import (
+    ClientContext,
+    DataScopeContext,
+    TenantContext,
+    UserIdentity,
+)
 from backend.common.request.parse import UNKNOWN_IP
 from backend.common.request.trace_id import gen_trace_id
 from backend.core.config import settings
-
-if TYPE_CHECKING:
-    from backend.common.model.dataclasses import (
-        ClientContext,
-        DataScopeContext,
-        TenantContext,
-        UserIdentity,
-    )
 
 __all__ = [
     'RequestContext',
