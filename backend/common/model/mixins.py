@@ -1,7 +1,9 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import BigInteger, Boolean, DateTime, func, text
+from sqlalchemy import Boolean, DateTime, func, text
 from sqlalchemy.orm import Mapped, mapped_column
+
+from backend.common.model.types import rel_key
 
 __all__ = [
     'AuditMixin',
@@ -33,18 +35,8 @@ class DateTimeMixin:
 class AuditMixin:
     """操作人审计 Mixin (逻辑关联)."""
 
-    created_by: Mapped[int | None] = mapped_column(
-        BigInteger,
-        default=None,
-        sort_order=92,
-        comment='创建人 ID',
-    )
-    updated_by: Mapped[int | None] = mapped_column(
-        BigInteger,
-        default=None,
-        sort_order=93,
-        comment='最后修改人 ID',
-    )
+    created_by: Mapped[rel_key | None] = mapped_column(sort_order=92, comment='创建人 ID')
+    updated_by: Mapped[rel_key | None] = mapped_column(sort_order=93, comment='最后修改人 ID')
 
 
 class SoftDeleteMixin:
@@ -60,13 +52,8 @@ class SoftDeleteMixin:
     )
     deleted_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
-        default=None,
+        index=True,
         sort_order=95,
         comment='软删除时间',
     )
-    deleted_by: Mapped[int | None] = mapped_column(
-        BigInteger,
-        default=None,
-        sort_order=96,
-        comment='执行删除人 ID',
-    )
+    deleted_by: Mapped[rel_key | None] = mapped_column(sort_order=96, comment='执行删除人 ID')
