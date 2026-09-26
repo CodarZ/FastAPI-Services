@@ -32,7 +32,7 @@ uid_key = Annotated[
         String(32),
         unique=True,
         sort_order=-99,
-        default=gen_uid,
+        insert_default=gen_uid,
         comment='业务全局唯一短 UID',
     ),
 ]
