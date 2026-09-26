@@ -2,9 +2,12 @@ from backend.common.enum.base import IntEnum, StrEnum
 
 __all__ = [
     'AudienceType',
+    'DataRuleExpressionType',
+    'DataRuleLogicalType',
     'DataScopeType',
     'LogStatusType',
     'MenuType',
+    'OperBusinessType',
     'OutboxStatusType',
     'RoleType',
     'StatusType',
@@ -39,23 +42,47 @@ class UserType(IntEnum):
 
 
 class MenuType(IntEnum):
-    """菜单/权限节点类型 (RBAC 路由与按钮权限树)."""
+    """菜单权限节点类型."""
 
     DIRECTORY = 0  # 目录
     MENU = 1  # 菜单
-    BUTTON = 2  # 按钮 / API 权限点
-    EMBEDDED = 3  # 内嵌 Iframe 组件
+    BUTTON = 2  # 按钮 / API
+    EMBEDDED = 3  # 内嵌外链
     LINK = 4  # 外部链接
 
 
 class DataScopeType(IntEnum):
     """行级数据权限范围."""
 
-    ALL = 1  # 全部数据权限
-    CUSTOM = 2  # 自定义部门权限
-    DEPT = 3  # 本部门数据权限
-    DEPT_AND_CHILD = 4  # 本部门及以下数据权限
-    SELF = 5  # 仅本人数据权限
+    ALL = 1  # 全部数据
+    DEPT = 2  # 本部门数据
+    DEPT_AND_CHILD = 3  # 本部门及以下数据
+    SELF = 4  # 仅本人数据
+    CUSTOM_DEPT = 5  # 自定义部门数据
+    CUSTOM_RULE = 6  # 自定义规则数据
+
+
+class DataRuleExpressionType(StrEnum):
+    """数据规则条件运算操作符."""
+
+    EQ = 'eq'  # 等于 (=)
+    NE = 'ne'  # 不等于 (!=)
+    GT = 'gt'  # 大于 (>)
+    GTE = 'gte'  # 大于等于 (>=)
+    LT = 'lt'  # 小于 (<)
+    LTE = 'lte'  # 小于等于 (<=)
+    LIKE = 'like'  # 模糊匹配 (LIKE)
+    IN = 'in'  # 包含于 (IN)
+    NOT_IN = 'not_in'  # 不包含于 (NOT IN)
+    IS_NULL = 'is_null'  # 判定为空 (IS NULL)
+    IS_NOT_NULL = 'is_not_null'  # 判定非空 (IS NOT NULL)
+
+
+class DataRuleLogicalType(StrEnum):
+    """数据规则多条件合并逻辑符."""
+
+    AND = 'and'  # 且: 必须同时满足
+    OR = 'or'  # 或: 满足其一即可
 
 
 class RoleType(IntEnum):
@@ -69,16 +96,30 @@ class OutboxStatusType(IntEnum):
     """本地事务 Outbox 事件状态."""
 
     PENDING = 0  # 待投递
-    PROCESSING = 1  # 处理中 (已被 Worker 加锁消费，防重抢占)
+    PROCESSING = 1  # 处理中
     SUCCESS = 2  # 投递成功
-    FAILED = 3  # 投递失败 (重试耗尽)
+    FAILED = 3  # 投递失败
 
 
 class LogStatusType(IntEnum):
-    """日志状态."""
+    """日志执行状态."""
 
     FAIL = 0  # 失败
     SUCCESS = 1  # 成功
+
+
+class OperBusinessType(IntEnum):
+    """操作审计业务类型."""
+
+    OTHER = 0  # 其它
+    INSERT = 1  # 新增
+    UPDATE = 2  # 修改
+    DELETE = 3  # 删除
+    VIEW = 4  # 查看敏感数据
+    EXPORT = 5  # 导出
+    IMPORT = 6  # 导入
+    GRANT = 7  # 授权
+    FORCE = 8  # 强退
 
 
 class AudienceType(StrEnum):
