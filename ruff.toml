@@ -6,7 +6,7 @@ unsafe-fixes = true
 
 target-version = "py314"
 
-exclude = [".agents/skills/**"]
+extend-exclude = [".agents/**", "scripts/**"]
 
 [lint]
 logger-objects = ["loguru.logger", "backend.common.log.logger", "backend.common.log.log"]
@@ -30,7 +30,8 @@ select = [
     "PTH",                       # flake8-use-pathlib（推荐使用 pathlib）
     "RET",                       # flake8-return（return 语句优化）
     "RUF",                       # Ruff 专属高级规则
-    "suspicious-url-open-usage", # bandit (安全检查，禁止使用 eval/exec 等危险函数)
+    "suspicious-eval-usage",     # bandit (安全检查，禁止使用 eval/exec 等危险函数执行任意代码)
+    "suspicious-url-open-usage", # bandit (安全检查，审计 urlopen 的 URL scheme，防止 file: 等协议任意读取)
     "SIM",                       # flake8-simplify (简化冗余代码)
     "TC",                        # flake8-type-checking (规范 TYPE_CHECKING 导入)
     "TID",                       # tidy-imports 禁用复杂的相对导入 (防止随着项目变大，import 结构崩溃)
@@ -65,8 +66,9 @@ ignore = [
 runtime-evaluated-base-classes = [
     "pydantic.BaseModel",
     "sqlalchemy.orm.DeclarativeBase",
-    "backend.common.schema.SchemaBase",
+    "backend.common.model.base.Base",
 ]
+runtime-evaluated-decorators = ["dataclasses.dataclass"]
 
 [lint.isort]
 order-by-type = true
@@ -96,7 +98,7 @@ convention = "google"
     "commented-out-code",
     "mutable-class-default",
 ]
-"**/model/*.py" = ["typing-only-standard-library-import"]
+"backend/common/model/mixins.py" = ["typing-only-first-party-import"]
 "**/api/*.py" = [
     "typing-only-first-party-import",
     "typing-only-third-party-import",
@@ -114,8 +116,6 @@ convention = "google"
 [lint.flake8-pytest-style]
 mark-parentheses = false
 parametrize-names-type = "list"
-parametrize-values-row-type = "list"
-parametrize-values-type = "tuple"
 
 [format]
 preview = true
